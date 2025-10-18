@@ -13,13 +13,60 @@ class FormBasico extends StatefulWidget {
 }
 
 class _FormBasicoState extends State<FormBasico> {
-  final _formKey = GlobalKey();
+  final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _idadeController = TextEditingController();
 
   bool _mostraSenha = true;
+  String _genero = "outro";
+  bool _aceitoTermos = false;
+
+  void enviar(){
+    final valido = _formKey.currentState?.validate()?? false;
+    if (!valido) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Verifique seu formulario"),
+          duration: const Duration(seconds: 3),
+         )
+        );
+    }
+    if (!_aceitoTermos){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Aceite os Termos'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+    
+     showDialog(
+        context: context,
+        useSafeArea: true,
+        barrierDismissible: false,
+        builder: (context) {
+        return AlertDialog(
+           title: Text('Title'),
+           content: Column(
+            children: [
+              Text(_nomeController.text),
+              Text(_emailController.text),
+            ],
+            ),
+            actions: [
+              TextButton(onPressed:(){
+                 Navigator.of(context).pop();
+              },
+              child: Text("Fechar"),
+              )
+            ],
+           );
+         },
+       );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,9 +154,54 @@ class _FormBasicoState extends State<FormBasico> {
                 }
                 return null;
                }
-            )
-          ],
-                ),
+            ),
+             SizedBox(height: 16,),
+          DropdownButtonFormField<String>(
+            value: _genero,
+            decoration: const InputDecoration(
+              labelText: 'Genêro',
+              border: OutlineInputBorder(),
+            ),
+            items: [
+              DropdownMenuItem(
+                value: "masculino",
+                child: Text("Masculino")),
+
+              DropdownMenuItem(
+                value: "feminino",
+                child: Text("Feminino")),
+
+              DropdownMenuItem(
+                value: "outro",
+                child: Text("Outro")),
+            ],
+            onChanged: (value) {
+              setState(() {
+                _genero =value ?? "Outro";
+              });
+            },
+          ),
+          SizedBox(height: 16,),
+          CheckboxListTile(
+           contentPadding: EdgeInsets.zero,
+           controlAffinity: ListTileControlAffinity.leading,
+           title: Text("Aceito os termos") ,
+           subtitle: _aceitoTermos? null : Text("Aceite os termos para continuar", style: TextStyle(color: Colors.red),),
+           value:_aceitoTermos,
+           onChanged: (v){
+            setState(() {
+              _aceitoTermos = v?? false;
+            });
+           }
+           ),
+            SizedBox(height: 17,),
+            ElevatedButton.icon(
+              onPressed: enviar,
+              label: Text("Enviar"),
+              icon: Icon(Icons.check),
+          )
+          ],     
+         ),
         )),
     );    
   }
